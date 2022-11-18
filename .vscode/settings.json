@@ -1,0 +1,7 @@
+{
+    "julia.additionalArgs": [
+    
+    ],
+    "julia.executablePath": "~/julia-1.8.2/bin/julia",
+    "julia.execution.codeInREPL": true
+}
