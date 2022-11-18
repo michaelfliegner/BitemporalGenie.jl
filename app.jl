@@ -43,22 +43,9 @@ using BitemporalPostgres, JSON, LifeInsuranceDataModel, LifeInsuranceProduct, Se
 
   @onchange isready begin
     LifeInsuranceDataModel.connect()
-    # @info "enter Load ContractPartnerRole"
-    # map(find(LifeInsuranceDataModel.ContractPartnerRole)) do entry
-    #   @info entry.value
-    #   rolesContractPartner[entry.id.value] = entry.value
-    # end
-    # @show rolesContractPartner
-    # @info "enter Load TariffItemRole"
-    # map(find(LifeInsuranceDataModel.TariffItemRole)) do entry
-    #   rolesTariffItem[entry.id.value] = entry.value
-    # end
-    # @show rolesTariffItem
-    # @info "enter Load TariffItemPartnerRole"
-    # map(find(LifeInsuranceDataModel.TariffItemPartnerRole)) do entry
-    #   rolesTariffItemPartner[entry.id.value] = entry.value
-    # end
-    # @show rolesTariffItemPartner
+    @show rolesContractPartner
+    @show rolesTariffItem
+    @show rolesTariffItemPartner
 
     @show "App is loaded"
     contracts = LifeInsuranceDataModel.get_contracts()

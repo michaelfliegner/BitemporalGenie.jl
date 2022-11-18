@@ -158,15 +158,7 @@
             <hr />
 
             <q-expansion-item label="contract partners" class="q-mt-md q-mr-sm bg-deep-purple-8 text-white">
-                <div class="col">
-                    <p>roles {{rolesContractPartner}} selected {{contract_partner_role}}</p>
-                    <q-select label="role" v-model="contract_partner_role" emit-value :options="rolesContractPartner">
-                    </q-select>
-                </div>
-                <div class="col">
-                    <q-btn label="add" v-on:click="command='add contractpartner'">
-                        </bq-btn>
-                </div>
+                <q-btn label="add" v-on:click="command='add contractpartner'"></q-btn>
                 <div v-for="(pr,pridx) in cs['partner_refs']" class="q-pa-md">
                     <div class="q-pa-md">
                         <q-btn label="delete" v-on:click="selected_contractpartner_idx=pridx">
