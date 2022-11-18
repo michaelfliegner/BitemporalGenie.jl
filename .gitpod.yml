@@ -1,0 +1,23 @@
+image:
+  file: .gitpod.Dockerfile
+tasks:
+  - init: echo 'PATH_add /home/gitpod/julia-1.8.2/bin' > /workspace/.envrc \
+          && echo 'PATH_add ~/julia-1.8.2/bin' > /workspace/.envrc \
+          && echo 'export SEARCHLIGHT_USERNAME="gitpod"' >> /workspace/.envrc \
+          && direnv allow /workspace
+          
+  - command: julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate();include("testsCreateContract.jl")'
+  
+ports:
+  - name: postgres
+    description: data base server
+    port: 5432
+    visibility: private
+    onOpen: ignore
+
+  - name: Web App
+    description: The main application web server
+    port: 8000
+    visibility: public
+    onOpen: open-browser
+
