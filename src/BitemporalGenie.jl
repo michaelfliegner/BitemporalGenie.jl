@@ -1,3 +1,4 @@
+mod
 using GenieFramework
 
 include("../app.jl")

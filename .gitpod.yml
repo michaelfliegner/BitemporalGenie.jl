@@ -1,3 +1,4 @@
+
 image:
   file: .gitpod.Dockerfile
 tasks:
@@ -6,6 +7,7 @@ tasks:
           && echo 'export SEARCHLIGHT_USERNAME="gitpod"' >> /workspace/.envrc \
           && direnv allow /workspace
           && julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate();include("testsCreateContract.jl")'
+          - command:  julia -e 'include("src'
   
 ports:
   - name: postgres
@@ -20,3 +22,7 @@ ports:
     visibility: public
     onOpen: open-browser
 
+
+vscode:
+  extensions:
+    - singularitti.vscode-julia-formatter
