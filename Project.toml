@@ -17,6 +17,7 @@ ToStruct = "43ec2cc1-0e50-5406-a854-b7ff8fdb8dad"
 
 [compat]
 GenieFramework = "1.6.0"
+JSON = "0.21"
 LifeInsuranceDataModel = "0.5.4"
 LifeInsuranceProduct = "0.4.2"
 SearchLight = "2"
