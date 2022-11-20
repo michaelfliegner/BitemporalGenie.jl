@@ -249,7 +249,7 @@ function fn(ns::Vector{Dict{String,Any}}, lbl::String)
     else
       if (length(n["children"]) > 0)
         m = fn(n["children"], lbl)
-        if (typeof(m) != Nothing)
+        if !isnothing((typeof(m)))
           return m
         end
       end
