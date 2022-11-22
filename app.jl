@@ -4,10 +4,13 @@ using GenieFramework
 using BitemporalPostgres, JSON, LifeInsuranceDataModel, LifeInsuranceProduct, SearchLight, TimeZones, ToStruct
 @genietools
 
+PERSISTED_cs::Dict{String,Any} = Dict{String,Any}("loaded" => "false")
+
 @handlers begin
   @out activetxn::Integer = 0
   @in command::String = ""
   @out contracts::Vector{Contract} = []
+  @out contract_ids::Dict{Int64,Int64} = Dict{Int64,Int64}()
   @out current_contract::Contract = Contract()
   @in selected_contract_idx::Integer = -1
   @out partners::Vector{Partner} = []
@@ -49,11 +52,16 @@ using BitemporalPostgres, JSON, LifeInsuranceDataModel, LifeInsuranceProduct, Se
 
     @show "App is loaded"
     contracts = LifeInsuranceDataModel.get_contracts()
+    let df = SearchLight.query("select distinct c.id, w.is_committed from contracts c join histories h on c.ref_history = h.id join workflows w on w.ref_history = h.id ")
+      contract_ids = Dict(Pair.(df.id, df.is_committed))
+    end
     tab = "contracts"
     cs["loaded"] = "false"
     prs = Dict{String,Any}("loaded" => "false")
     ps = Dict{String,Any}("loaded" => "false")
-    @show "contractsModel pushed"
+
+    @show contract_ids
+    @info "contractsModel pushed"
   end
 
   @onchange selected_contract_idx begin
@@ -63,23 +71,24 @@ using BitemporalPostgres, JSON, LifeInsuranceDataModel, LifeInsuranceProduct, Se
       @info "enter selected_contract_idx"
       try
         current_contract = contracts[selected_contract_idx+1]
+        activetxn = contract_ids[current_contract.id.value] == 0 ? 1 : 0
+        @show activetxn
         histo = map(convert, LifeInsuranceDataModel.history_forest(current_contract.ref_history.value).shadowed)
         cs = JSON.parse(JSON.json(LifeInsuranceDataModel.csection(current_contract.id.value, now(tz"Europe/Warsaw"), now(tz"Europe/Warsaw"), activetxn)))
         cs["loaded"] = "true"
-        ti = cs["product_items"][1]["tariff_items"][1]
-        print("ti=")
-        println(ti)
-        print("tistruct")
-        println(ToStruct.tostruct(LifeInsuranceDataModel.TariffItemSection, ti))
-        tistruct = ToStruct.tostruct(LifeInsuranceDataModel.TariffItemSection, ti)
-        LifeInsuranceProduct.calculate!(tistruct)
-        cs["product_items"][1]["tariff_items"][1] = JSON.parse(JSON.json(tistruct))
-        selected_contract_idx = -1
+        PERSISTED_cs = copy(cs)
+        if (cs["product_items"] != [])
+          ti = cs["product_items"][1]["tariff_items"][1]
+          tistruct = ToStruct.tostruct(LifeInsuranceDataModel.TariffItemSection, ti)
+          LifeInsuranceProduct.calculate!(tistruct)
+          cs["product_items"][1]["tariff_items"][1] = JSON.parse(JSON.json(tistruct))
+          selected_contract_idx = -1
+          @show cs["loaded"]
+          @show ti
+        end
         tab = "csection"
-        cs["loaded"] = "false"
-        @show cs["loaded"]
-        @show ti
-        @show rolesContractPartner
+        @info "contract loaded"
+        @show cs
       catch err
         println("wassis shief gegangen ")
         @error "ERROR: " exception = (err, catch_backtrace())
@@ -149,6 +158,20 @@ using BitemporalPostgres, JSON, LifeInsuranceDataModel, LifeInsuranceProduct, Se
 
   @onchange command begin
     @show command
+    if command == "create contract"
+      activetxn = 1
+      w1 = Workflow(
+        type_of_entity="Contract",
+        tsw_validfrom=ZonedDateTime(2014, 5, 30, 21, 0, 1, 1, tz"Africa/Porto-Novo"),
+      )
+      create_entity!(w1)
+      c = Contract()
+      cr = ContractRevision(description="contract creation properties")
+      create_component!(c, cr, w1)
+      @show command
+
+      command = ""
+    end
     if command == "add productitem"
       @show command
       command = ""
@@ -178,15 +201,18 @@ using BitemporalPostgres, JSON, LifeInsuranceDataModel, LifeInsuranceProduct, Se
       @show tab
       try
         node = fn(histo, selected_version)
-        println(node)
+        @info "node"
+        @show node
+        activetxn = (node["interval"]["is_committed"] == 0 ? 1 : 0)
         txn_time = node["interval"]["tsdb_validfrom"]
         ref_time = node["interval"]["tsworld_validfrom"]
         current_version = parse(Int, selected_version)
+        @show activetxn
         @show txn_time
         @show ref_time
         @show current_version
         @info "vor csection"
-        cs = JSON.parse(JSON.json(LifeInsuranceDataModel.csection(current_contract.id.value, txn_time, ref_time)))
+        cs = JSON.parse(JSON.json(LifeInsuranceDataModel.csection(current_contract.id.value, txn_time, ref_time, activetxn)))
         cs["loaded"] = "true"
         @info "vor tab "
         tab = "csection"
@@ -195,6 +221,7 @@ using BitemporalPostgres, JSON, LifeInsuranceDataModel, LifeInsuranceProduct, Se
         println(ti)
       catch err
         println("wassis shief gegangen ")
+
         @error "ERROR: " exception = (err, catch_backtrace())
       end
     end
@@ -265,7 +292,8 @@ function compareRevisions(t, previous::Dict{String,Any}, current::Dict{String,An
     for (key, previous_value) in previous
       if !(key in ("ref_validfrom", "ref_invalidfrom", "ref_component"))
         let current_value = current[key]
-          if previous_value != current_value
+          if previous_value != compareModelStateContract
+            current_value
             changed = true
           end
         end
