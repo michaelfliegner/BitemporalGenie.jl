@@ -8,7 +8,8 @@ tasks:
           && direnv allow /workspace
           && /workspace/BitemporalGenie.jl
           && julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate();include("testsCreateContract.jl")'
-  - command:  julia -e 'include("src/BitemporalGenie.jl")
+  - command:  julia -e 'include("src/BitemporalGenie.jl")'
+  
   
 ports:
   - name: postgres
