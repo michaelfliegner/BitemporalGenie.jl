@@ -6,9 +6,9 @@ tasks:
           && echo 'PATH_add ~/julia-1.8.2/bin' > /workspace/.envrc \
           && echo 'export SEARCHLIGHT_USERNAME="gitpod"' >> /workspace/.envrc \
           && direnv allow /workspace
-          && /workspace/BitemporalGenie.jl
-          && julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate();include("testsCreateContract.jl")'
-  - command:  julia -e 'include("src/BitemporalGenie.jl")'
+          && cd /workspace/BitemporalGenie.jl
+          && julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate();using LifeInsuranceDataModel; LifeInsuranceDataModel.load_model()'
+
   
   
 ports:
