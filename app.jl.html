@@ -120,15 +120,23 @@
                 <q-item class="q-pa-md bg-purple-8 text-white">
                     <div class="row">
                         <div class="col">
-                            <q-input bg-color="white" label="description" v-model="cs['revision']['description']">
+                            <q-input text-color=ẅhite" bg-color="red" label="MUTABLE" :readonly="true" v-if="activetxn">
                             </q-input>
                         </div>
                         <div class="col">
-                            <q-input bg-color="white" label="ref_history" v-model="cs['ref_history']['value']">
+                            <q-input outlined bg-color="white" label="valid as of" v-model="ref_time" :readonly="true">
                             </q-input>
                         </div>
                         <div class="col">
-                            <q-input bg-color="white" label="tsdb_validfrom" v-model="cs['tsdb_validfrom']">
+                            <q-input outlined bg-color="white" label="version created at" v-model="txn_time"
+                                :readonly="true">
+                            </q-input>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col">
+                            <q-input outlined bg-color="white" label="description"
+                                v-model="cs['revision']['description']" :readonly="activetxn==false">
                             </q-input>
                         </div>
                     </div>
@@ -136,30 +144,28 @@
                 <hr />
 
                 <q-expansion-item label="contract partners" class="q-mt-md q-mr-sm bg-deep-purple-8 text-white">
-                    <q-btn label="add" v-on:click="command='add contractpartner'"></q-btn>
+                    <div v-if="activetxn">
+                        <q-btn label="add" v-on:click="command='add contractpartner'"></q-btn>
+                    </div>
                     <div v-for="(pr,pridx) in cs['partner_refs']" class="q-pa-md">
-                        <div class="q-pa-md">
+                        <div class="q-pa-md" v-if="activetxn">
                             <q-btn label="delete" v-on:click="selected_contractpartner_idx=pridx">
                             </q-btn>
                         </div>
                         <div class="row">
                             <div class="col">
-                                <q-input bg-color="white" label="ref_component"
-                                    v-model="pr['rev']['ref_component']['value']">
-                                </q-input>
-                            </div>
-                            <div class="col">
-                                <q-input bg-color="white" label="description" v-model="pr['rev']['description']">
+                                <q-input bg-color="white" label="description" v-model="pr['rev']['description']"
+                                    :readonly="activetxn==false">
                                 </q-input>
                             </div>
                             <div class="col">
                                 <q-select label="ref_partner sel" v-model="pr['rev']['ref_partner']['value']"
-                                    :options="[1,2]">
+                                    :options="[1,2]" v-if="activetxn">
                                 </q-select>
                             </div>
                             <div class="col">
                                 <q-input bg-color="white" label="ref_partner"
-                                    v-model="pr['rev']['ref_partner']['value']">
+                                    v-model="pr['rev']['ref_partner']['value']" :readonly="true">
                                 </q-input>
                             </div>
                         </div>
@@ -167,20 +173,17 @@
                 </q-expansion-item>
                 <hr />
                 <q-expansion-item label="product items" class="q-mt-md q-mr-sm bg-deep-purple-8 text-white">
-                    <q-btn label="add" v-on:click="command='add productitem'"></q-btn>
+                    <q-btn label="add" v-on:click="command='add productitem'" v-if="activetxn"></q-btn>
                     <div v-for="(pi,piidx) in cs['product_items']" class="q-pa-md">
                         <div class="q-pa-md">
-                            <q-btn label="delete" v-on:click="seselected_productitem_idxlected_productitem_idx=piidx">
+                            <q-btn label="delete" v-on:click="seselected_productitem_idxlected_productitem_idx=piidx"
+                                v-if="activetxn">
                             </q-btn>
                         </div>
                         <div class="row">
                             <div class="col">
-                                <q-input bg-color="white" label="description"
-                                    v-model="pi['revision']['ref_component']['value']">
-                                </q-input>
-                            </div>
-                            <div class="col">
-                                <q-input bg-color="white" label="description" v-model="pi['revision']['description']">
+                                <q-input bg-color="white" label="description" v-model="pi['revision']['description']"
+                                    :readonly="!activetxn">
                                 </q-input>
                             </div>
                         </div>
@@ -191,21 +194,23 @@
                                     <div class="row">
                                         <div class="col">
                                             <q-input bg-color="white" label="description"
-                                                v-model="ti['tariff_ref']['rev']['description']"></q-input>
+                                                v-model="ti['tariff_ref']['rev']['description']" :readonly="!activetxn">
+                                            </q-input>
                                         </div>
                                         <div class="col">
                                             <q-input bg-color="white" label="ref_tariff"
-                                                v-model="ti['tariff_ref']['rev']['ref_tariff']['value']">
+                                                v-model="ti['tariff_ref']['rev']['ref_tariff']['value']"
+                                                :readonly="true">
                                             </q-input>
                                         </div>
                                         <div class="col">
                                             <q-input bg-color="white" label="deferment"
-                                                v-model="ti['tariff_ref']['rev']['deferment']">
+                                                v-model="ti['tariff_ref']['rev']['deferment']" :readonly="!activetxn">
                                             </q-input>
                                         </div>
                                         <div class="col">
                                             <q-input bg-color="white" label="annuity_due"
-                                                v-model="ti['tariff_ref']['rev']['annuity_due']">
+                                                v-model="ti['tariff_ref']['rev']['annuity_due']" :readonly="!activetxn">
                                             </q-input>
                                         </div>
                                     </div>
@@ -213,35 +218,27 @@
                                     <q-expansion-item label="tariff_item_partners">
                                         <q-list class="q-mt-md q-mr-sm bg-deep-purple-8 text-white">
                                             <div v-for="tipr in ti['partner_refs']" class="q-pa-md">
-                                                <p>description {{tipr[&#039;rev&#039;][&#039;description&#039;]}}
-                                                </p>
-                                                <p>ref_partner
-                                                    {{tipr[&#039;rev&#039;][&#039;ref_partner&#039;][&#039;value&#039;]}}
-                                                </p>
                                                 <div class="row">
                                                     <div class="col">
-                                                        <q-input bg-color="white" label="ref_component"
-                                                            v-model="tipr['rev']['ref_component']['value']">
-                                                        </q-input>
-                                                    </div>
-                                                    <div class="col">
-                                                        <q-input bg-color="white" label="id"
-                                                            v-model="tipr['rev']['id']['value']">
-                                                        </q-input>
-                                                    </div>
-                                                    <div class="col">
                                                         <q-input bg-color="white" label="description"
-                                                            v-model="tipr['rev']['description']">
+                                                            v-model="tipr['rev']['description']" :readonly="!activetxn">
                                                         </q-input>
+                                                    </div>
+                                                    <div class="col">
+                                                        <q-select label="ref_role"
+                                                            v-model="tipr['rev']['ref_role']['value']" :options="[1,2]"
+                                                            v-if="activetxn">
+                                                        </q-select>
                                                     </div>
                                                     <div class="col">
                                                         <q-input bg-color="white" label="ref_role"
-                                                            v-model="tipr['rev']['ref_role']['value']">
+                                                            v-model="tipr['rev']['ref_role']['value']" :readonly="true">
                                                         </q-input>
                                                     </div>
                                                     <div class="col">
                                                         <q-input bg-color="white" label="ref_partner"
-                                                            v-model="tipr['rev']['ref_partner']['value']">
+                                                            v-model="tipr['rev']['ref_partner']['value']"
+                                                            :readonly="true">
                                                         </q-input>
                                                     </div>
                                                 </div>
