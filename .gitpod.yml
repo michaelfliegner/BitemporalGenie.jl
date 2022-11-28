@@ -6,12 +6,12 @@ tasks:
           && echo 'PATH_add ~/julia-1.8.2/bin' > /workspace/.envrc \
           && echo 'export SEARCHLIGHT_USERNAME="gitpod"' >> /workspace/.envrc \
           && direnv allow /workspace
-          && cd /workspace/BitemporalGenie.jl
+ - command: cd /workspace/BitemporalGenie.jl \
           && julia -e 'using Pkg; Pkg.activate("."); Pkg.instantiate();using LifeInsuranceDataModel; LifeInsuranceDataModel.load_model()'
 
   
   
-ports:
+port
   - name: postgres
     description: data base server
     port: 5432
